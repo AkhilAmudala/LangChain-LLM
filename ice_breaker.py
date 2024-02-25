@@ -1,12 +1,19 @@
 import os
+from dotenv import load_dotenv
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.llms.vertexai import VertexAI
 
+from langchain_community.llms import LlamaCpp
+from llama_cpp import Llama
+import replicate
+
+
 if __name__=='__main__':
+    load_dotenv()
     print("hello LangChain")
-    print(os.environ['OPENAI_API_KEY'])
+    #print(os.environ['API_KEY'])
 
     information="""
     Wardell Stephen Curry II (/ˈstɛfən/ STEF-ən; born March 14, 1988)[1] is an American professional basketball player for the Golden State Warriors of the National Basketball Association (NBA). Widely regarded as the greatest shooter and one of the greatest players of all time, Curry is credited with revolutionizing the sport by inspiring teams and players to take more three-point shots.[2][3][4][5] He is a four-time NBA champion, a two-time NBA Most Valuable Player (MVP), an NBA Finals MVP, an NBA All-Star Game MVP, and was named the inaugural NBA Western Conference Finals MVP. He is also a ten-time NBA All-Star, a nine-time All-NBA selection (including four on the First Team), and has won two gold medals at the FIBA World Cup as a member of the U.S. men's national team.
@@ -22,15 +29,32 @@ if __name__=='__main__':
     """
 
     summary_prompt_template = PromptTemplate(input_variables=["information"], template=summary_template)
+   
     #chatModel : which has llm model inside (wrapper)
     #llm=ChatOpenAI(temperature= 0, model_name='gpt-3.5-turbo') 
-    llm=ChatOpenAI(temperature= 0, model_name='text-davinci-003') 
-    #use model that is free
-
+    #llm=ChatOpenAI(temperature= 0, model_name='gpt-3.5-turbo-instruct')
+    #result=llm_chain.invoke(input={"information": information})
+    
     #llm=VertexAI(model_name='text-bison@001')
+    #use model that is free : trying LLama
 
+    # llm = Llama(
+    #     model_path="models/Llama-2-7B-Chat-GGUF/llama-2-7b-chat.Q4_0.gguf"
+    # )
 
-    llm_chain=LLMChain(llm=llm, prompt=summary_prompt_template)
-    result=llm_chain.invoke(input={"information": information})
+    # llm = Llama(
+    #   model_path="./models/7B/llama-model.gguf")
 
-    print(result)
+    # #output=llm(information)
+    # #print(output)
+    # llm_chain=LLMChain(llm=llm, prompt=summary_prompt_template)
+    # result=llm_chain.run(input={"information": information})
+    # print(result)
+
+    output = replicate.run(
+    "mistralai/mixtral-8x7b-instruct-v0.1",
+    input={
+        "prompt": summary_template,
+        "temperature": 0.6
+    })
+    print(''.join(i for i in output))
